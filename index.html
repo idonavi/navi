@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GPS Heading</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.png">
+
+<style>
+body {
+  margin:0;
+  background:#E6E6E6;
+  font-family: system-ui;
+  text-align:center;
+}
+#heading {
+  font-size:20vw;
+  color:#b3ffb3;
+  margin-top:15vh;
+}
+#coords {
+  font-size:6vw;
+  color:black;
+  margin-top:5vh;
+}
+</style>
+</head>
+<body>
+
+<div id="heading">0°</div>
+<div id="coords">
+  Lat: --<br>
+  Lon: --
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js');
+}
+
+// ---------- Vakautettu heading ----------
+let smoothed = 0;
+let stable = 0;
+const alpha = 0.15;
+
+function updateHeading(raw) {
+  smoothed = smoothed + alpha * (raw - smoothed);
+  if (Math.abs(smoothed - stable) > 3) {
+    stable = smoothed;
+    document.getElementById('heading').innerText =
+      Math.round(stable) + "°";
+  }
+}
+
+// iOS & Android orientation
+window.addEventListener('deviceorientationabsolute', e => {
+  if (e.alpha !== null) updateHeading(360 - e.alpha);
+}, true);
+
+window.addEventListener('deviceorientation', e => {
+  if (e.webkitCompassHeading) updateHeading(e.webkitCompassHeading);
+}, true);
+
+// ---------- DMS ----------
+function toDMS(v){
+  const d = parseInt(v);
+  const mfull = Math.abs((v - d) * 60);
+  const m = parseInt(mfull);
+  const s = ((mfull - m) * 60).toFixed(2);
+  return `${d}° ${m}' ${s}"`;
+}
+
+// ---------- GPS ----------
+navigator.geolocation.watchPosition(pos=>{
+  const lat = pos.coords.latitude;
+  const lon = pos.coords.longitude;
+
+  document.getElementById('coords').innerHTML =
+    `Lat: ${toDMS(lat)}<br>Lon: ${toDMS(lon)}`;
+},{
+  enableHighAccuracy:true,
+  maximumAge:0
+});
+</script>
+
+</body>
+</html>

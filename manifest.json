@@ -1,0 +1,15 @@
+{
+  "name": "GPS Heading",
+  "short_name": "Heading",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#E6E6E6",
+  "theme_color": "#E6E6E6",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
